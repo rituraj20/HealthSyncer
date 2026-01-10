@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -14,6 +15,7 @@ public class PatientService {
     PatientRepo patientRepo;
 
     public ResponseEntity<Object> createPatient(Patient patient) {
+
         if (patient.getMobileNumber() < 1000000000L || patient.getMobileNumber() > 9999999999L) {
             return ResponseEntity.badRequest().body("Mobile number must be exactly 10 digits");
         }
@@ -59,8 +61,63 @@ public class PatientService {
         if(op.isEmpty()) return ResponseEntity.badRequest().build();
         try {
             Patient s=op.get();
-            s.setMobileNumber(patient.getMobileNumber());
-            s.setName(patient.getName());
+            if (patient.getMobileNumber() != 0) {
+
+                if (patient.getMobileNumber() < 1000000000L || patient.getMobileNumber() > 9999999999L) {
+                    return ResponseEntity.badRequest().body("Mobile number must be exactly 10 digits");
+                }
+
+                if (!Objects.equals(s.getMobileNumber(), patient.getMobileNumber())
+                        && patientRepo.existsByMobileNumber(patient.getMobileNumber())) {
+                    return ResponseEntity.badRequest().body("Mobile number already exists");
+                }
+
+                s.setMobileNumber(patient.getMobileNumber());
+            }
+            if(patient.getName()!=null){
+                s.setName(patient.getName());
+            }
+            if(patient.getPassword()!=null){
+                String password = patient.getPassword();
+
+                String passwordRegex =
+                        "^(?=.*[a-z])" +        // at least one lowercase
+                                "(?=.*[A-Z])" +         // at least one uppercase
+                                "(?=.*\\d)" +           // at least one digit
+                                "(?=.*[@$!%*?&])" +     // at least one special character
+                                "[A-Za-z\\d@$!%*?&]{8,15}$";
+
+                if (!password.matches(passwordRegex)) {
+                    return ResponseEntity.badRequest().body(
+                            "Password must be 8-15 characters and include uppercase, lowercase, number, and special character"
+                    );
+                }
+                s.setPassword(patient.getPassword());
+            }
+
+
+            if(patient.getDob()!=null){
+                s.setDob(patient.getDob());
+            }
+
+            if (patient.getEmail() != null) {
+
+                if (!patient.getEmail().endsWith("@gmail.com")) {
+                    return ResponseEntity.badRequest().body("Email must end with @gmail.com");
+                }
+
+                if (!patient.getEmail().equals(s.getEmail())
+                        && patientRepo.existsByEmail(patient.getEmail())) {
+                    return ResponseEntity.badRequest().body("Email already exists");
+                }
+
+                s.setEmail(patient.getEmail());
+            }
+
+            if(patient.getGender()!=null){
+                s.setGender(patient.getGender());
+            }
+
             patientRepo.save(s);
             return ResponseEntity.ok(s);
         }
@@ -68,4 +125,5 @@ public class PatientService {
             return  ResponseEntity.badRequest().build();
         }
     }
+
 }

@@ -9,7 +9,7 @@ import org.hibernate.annotations.processing.Pattern;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
+@ToString
 @Builder
 public class Patient {
     @Id
@@ -18,15 +18,15 @@ public class Patient {
     String name;
     @Column(unique = true,  nullable = false)
 
-    long mobileNumber;
+   private long mobileNumber;
     @Column(unique = true,  nullable = false)
-    String email;
-    String address;
-    String dob;
-    String gender;
+   private String email;
+    private  String address;
+    private String dob;
     @Column(unique = true,  nullable = false)
-    String password;
+    private String gender;
+    private String password;
     @Column(unique = true,  nullable = false)
-    String confirmPassword;
-
+    private String confirmPassword;
 }
+
