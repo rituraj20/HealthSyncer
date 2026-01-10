@@ -14,8 +14,34 @@ public class PatientService {
     PatientRepo patientRepo;
 
     public ResponseEntity<Object> createPatient(Patient patient) {
+        if (patient.getMobileNumber() < 1000000000L || patient.getMobileNumber() > 9999999999L) {
+            return ResponseEntity.badRequest().body("Mobile number must be exactly 10 digits");
+        }
+        if (patient.getEmail() == null || !patient.getEmail().endsWith("@gmail.com")) {
+            return ResponseEntity.badRequest().body("Email must end with @gmail.com");
+        }
         if(patientRepo.existsByEmail(patient.getEmail()) || patientRepo.existsByMobileNumber(patient.getMobileNumber()) ){
             return ResponseEntity.badRequest().body("Patient already exists");
+        }
+        if(patient.getPassword()==null){
+            return ResponseEntity.badRequest().body("Password must not be null");
+        }
+        if(!patient.getPassword().equals(patient.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Passwords do not match");
+        }
+        String password = patient.getPassword();
+
+        String passwordRegex =
+                "^(?=.*[a-z])" +        // at least one lowercase
+                        "(?=.*[A-Z])" +         // at least one uppercase
+                        "(?=.*\\d)" +           // at least one digit
+                        "(?=.*[@$!%*?&])" +     // at least one special character
+                        "[A-Za-z\\d@$!%*?&]{8,15}$";
+
+        if (!password.matches(passwordRegex)) {
+            return ResponseEntity.badRequest().body(
+                    "Password must be 8-15 characters and include uppercase, lowercase, number, and special character"
+            );
         }
 
         try {
