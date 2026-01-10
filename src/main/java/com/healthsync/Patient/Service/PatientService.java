@@ -14,9 +14,10 @@ public class PatientService {
     PatientRepo patientRepo;
 
     public ResponseEntity<Object> createPatient(Patient patient) {
-        if(patientRepo.existsById(patient.getId())){
-            return ResponseEntity.badRequest().body("Student with same id already exists");
+        if(patientRepo.existsByEmail(patient.getEmail()) || patientRepo.existsByMobileNumber(patient.getMobileNumber()) ){
+            return ResponseEntity.badRequest().body("Patient     already exists");
         }
+
         try {
             patientRepo.save(patient);
             return ResponseEntity.ok(patient);

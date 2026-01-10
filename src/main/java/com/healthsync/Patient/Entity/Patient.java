@@ -7,17 +7,19 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+
 @Builder
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     int id;
-    StringBuffer name;
+    String name;
+    @Column(unique = true,  nullable = false)
     long mobileNumber;
-    StringBuffer email;
-    StringBuffer address;
-    StringBuffer dob;
-    StringBuffer gender;
+    @Column(unique = true,  nullable = false)
+    String email;
+    String address;
+    String dob;
+    String gender;
 
 }
