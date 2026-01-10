@@ -1,5 +1,5 @@
 
-package com.healthsync.healthsync.Entity;
+package com.healthsync.Patient.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 @Entity

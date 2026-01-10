@@ -1,4 +1,4 @@
-package com.healthsync.healthsync;
+package com.healthsync.Patient;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
