@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLOutput;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -56,13 +57,13 @@ public class PatientService {
 
     }
 
-    public ResponseEntity<Object> updatePatient(Patient patient, int mobileNumber) {
+    public ResponseEntity<Object> updatePatient(Patient patient, long mobileNumber) {
         Optional<Patient> op=patientRepo.findByMobileNumber(mobileNumber);
         if(op.isEmpty()) return ResponseEntity.badRequest().build();
         try {
             Patient s=op.get();
             if (patient.getMobileNumber() != 0) {
-
+                System.out.println("mobile Number"+ patient.getMobileNumber());
                 if (patient.getMobileNumber() < 1000000000L || patient.getMobileNumber() > 9999999999L) {
                     return ResponseEntity.badRequest().body("Mobile number must be exactly 10 digits");
                 }
@@ -101,13 +102,14 @@ public class PatientService {
             }
 
             if (patient.getEmail() != null) {
+                System.out.println("email "+ patient.getEmail() );
 
                 if (!patient.getEmail().endsWith("@gmail.com")) {
                     return ResponseEntity.badRequest().body("Email must end with @gmail.com");
                 }
 
                 if (!patient.getEmail().equals(s.getEmail())
-                        && patientRepo.existsByEmail(patient.getEmail())) {
+                        || patientRepo.existsByEmail(patient.getEmail())) {
                     return ResponseEntity.badRequest().body("Email already exists");
                 }
 

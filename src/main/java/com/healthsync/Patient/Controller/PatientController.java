@@ -17,10 +17,7 @@ public class PatientController {
         return patientService.createPatient(patient);
     }
     @PutMapping("/update/{mobileNumber}")
-    public ResponseEntity<Object> updatePatient(@RequestBody  Patient patient, @PathVariable int mobileNumber) {
+    public ResponseEntity<Object> updatePatient(@RequestBody  Patient patient, @PathVariable long mobileNumber) {
         return patientService.updatePatient(patient, mobileNumber);
     }
-
-
-
 }
