@@ -16,9 +16,9 @@ public class PatientController {
     public ResponseEntity<Object> createPatient(@RequestBody  Patient patient) {
         return patientService.createPatient(patient);
     }
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Object> updatePatient(@RequestBody  Patient patient, @PathVariable int id) {
-        return patientService.updatePatient(patient, id);
+    @PutMapping("/update/{mobileNumber}")
+    public ResponseEntity<Object> updatePatient(@RequestBody  Patient patient, @PathVariable int mobileNumber) {
+        return patientService.updatePatient(patient, mobileNumber);
     }
 
 

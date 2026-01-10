@@ -15,7 +15,7 @@ public class PatientService {
 
     public ResponseEntity<Object> createPatient(Patient patient) {
         if(patientRepo.existsByEmail(patient.getEmail()) || patientRepo.existsByMobileNumber(patient.getMobileNumber()) ){
-            return ResponseEntity.badRequest().body("Patient     already exists");
+            return ResponseEntity.badRequest().body("Patient already exists");
         }
 
         try {
@@ -28,8 +28,8 @@ public class PatientService {
 
     }
 
-    public ResponseEntity<Object> updatePatient(Patient patient, int id) {
-        Optional<Patient> op=patientRepo.findById(id);
+    public ResponseEntity<Object> updatePatient(Patient patient, int mobileNumber) {
+        Optional<Patient> op=patientRepo.findByMobileNumber(mobileNumber);
         if(op.isEmpty()) return ResponseEntity.badRequest().build();
         try {
             Patient s=op.get();
