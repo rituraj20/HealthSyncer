@@ -20,4 +20,8 @@ public class PatientController {
     public ResponseEntity<Object> updatePatient(@RequestBody  Patient patient, @PathVariable long mobileNumber) {
         return patientService.updatePatient(patient, mobileNumber);
     }
+    @DeleteMapping("{mobileNumber}")
+    public ResponseEntity<Object> deleteStudent(@PathVariable long mobileNumber) {
+        return patientService.deletePatient(mobileNumber);
+    }
 }
