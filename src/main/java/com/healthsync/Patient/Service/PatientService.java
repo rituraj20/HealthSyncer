@@ -5,8 +5,8 @@ import com.healthsync.Patient.Repository.PatientRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
-import java.sql.SQLOutput;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -127,6 +127,7 @@ public class PatientService {
             return  ResponseEntity.badRequest().build();
         }
     }
+    
 
     public ResponseEntity<Object> deletePatient(long mobileNumber) {
         if(!patientRepo.existsByMobileNumber(mobileNumber)) {
@@ -139,5 +140,8 @@ public class PatientService {
         catch(Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    public ResponseEntity<Object> getPatientByMobileNumber(long mobileNumber) {
     }
 }

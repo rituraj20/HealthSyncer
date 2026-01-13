@@ -24,4 +24,9 @@ public class PatientController {
     public ResponseEntity<Object> deleteStudent(@PathVariable long mobileNumber) {
         return patientService.deletePatient(mobileNumber);
     }
+
+    @GetMapping("/getPatient/{mobileNumber}")
+    public ResponseEntity<Object> getPatientByMobileNumber(Patient patient, long mobileNumber) {
+        return patientService.getPatientByMobileNumber(mobileNumber);
+    }
 }
