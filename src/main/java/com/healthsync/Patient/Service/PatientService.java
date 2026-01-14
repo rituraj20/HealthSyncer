@@ -143,5 +143,17 @@ public class PatientService {
     }
 
     public ResponseEntity<Object> getPatientByMobileNumber(long mobileNumber) {
+        if(!patientRepo.existsByMobileNumber(mobileNumber)) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            patientRepo.deleteByMobileNumber(mobileNumber);
+            return ResponseEntity.ok(mobileNumber);
+        }
+        catch(Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+
     }
 }
