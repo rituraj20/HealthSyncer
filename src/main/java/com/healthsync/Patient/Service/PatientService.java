@@ -14,7 +14,6 @@ import java.util.Optional;
 public class PatientService {
     @Autowired
     PatientRepo patientRepo;
-
     public ResponseEntity<Object> createPatient(Patient patient) {
 
         if (patient.getMobileNumber() < 1000000000L || patient.getMobileNumber() > 9999999999L) {
@@ -143,17 +142,12 @@ public class PatientService {
     }
 
     public ResponseEntity<Object> getPatientByMobileNumber(long mobileNumber) {
-        if(!patientRepo.existsByMobileNumber(mobileNumber)) {
-            return ResponseEntity.badRequest().build();
-        }
-        try {
-            patientRepo.deleteByMobileNumber(mobileNumber);
-            return ResponseEntity.ok(mobileNumber);
-        }
-        catch(Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
 
-
+        return patientRepo.findByMobileNumber(mobileNumber)
+                .map(patient -> ResponseEntity.ok((Object) patient))
+                .orElseThrow(() ->
+                        new RuntimeException("User not found with mobile: " + mobileNumber));
     }
+
+
 }
