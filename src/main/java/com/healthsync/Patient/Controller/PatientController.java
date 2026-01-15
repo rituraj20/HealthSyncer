@@ -26,7 +26,7 @@ public class PatientController {
     }
 
     @GetMapping("/getPatient/{mobileNumber}")
-    public ResponseEntity<Object> getPatientByMobileNumber(Patient patient, long mobileNumber) {
+    public ResponseEntity<Object> getPatientByMobileNumber( long mobileNumber) {
         return patientService.getPatientByMobileNumber(mobileNumber);
     }
 }
