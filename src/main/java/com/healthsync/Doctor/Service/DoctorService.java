@@ -128,6 +128,7 @@ public class DoctorService {
     public ResponseEntity<Object> deleteDoctor(long mobileNumber) {
         if(!doctorRepo.existsByMobileNumber(mobileNumber)) {
             return ResponseEntity.badRequest().build();
+            //false commit
         }
         try {
             doctorRepo.deleteByMobileNumber(mobileNumber);

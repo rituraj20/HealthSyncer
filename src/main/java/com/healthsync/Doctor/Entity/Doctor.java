@@ -18,7 +18,7 @@ public class Doctor {
     @Column(unique = true,  nullable = false)
    private long mobileNumber;
     @Column(unique = true,  nullable = false)
-   private String email;
+    private String email;
     private  String address;
     @Column( nullable = false)
     private String specialization;
