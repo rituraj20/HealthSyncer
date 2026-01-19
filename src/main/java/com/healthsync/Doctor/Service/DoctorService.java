@@ -12,7 +12,7 @@ import java.util.Optional;
 @Service
 public class DoctorService {
     @Autowired
-    DoctorRepo doctorRepo;
+   private DoctorRepo doctorRepo;
     public ResponseEntity<Object> createDoctor(Doctor doctor) {
 
         if (doctor.getMobileNumber() < 1000000000L || doctor.getMobileNumber() > 9999999999L) {
