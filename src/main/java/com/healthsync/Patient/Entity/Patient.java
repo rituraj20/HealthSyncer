@@ -2,7 +2,6 @@
 package com.healthsync.Patient.Entity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.processing.Pattern;
 
 @Entity
 @Getter
