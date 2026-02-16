@@ -1,8 +1,6 @@
 package com.healthsync.Patient.Controller;
 import com.healthsync.Patient.Entity.Patient;
 import com.healthsync.Patient.Service.PatientService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,8 +8,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class PatientController {
 
-    @Autowired
-    public PatientService patientService;
+    private final PatientService patientService;
+
+    public PatientController(PatientService patientService) {
+        this.patientService = patientService;
+    }
     @PostMapping
     public ResponseEntity<Object> createPatient(@RequestBody  Patient patient) {
         return patientService.createPatient(patient);
@@ -26,7 +27,7 @@ public class PatientController {
     }
 
     @GetMapping("/getPatient/{mobileNumber}")
-    public ResponseEntity<Object> getPatientByMobileNumber( long mobileNumber) {
+    public ResponseEntity<Object> getPatientByMobileNumber(@PathVariable long mobileNumber) {
         return patientService.getPatientByMobileNumber(mobileNumber);
     }
 }

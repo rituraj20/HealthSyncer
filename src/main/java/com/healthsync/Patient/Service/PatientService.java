@@ -1,153 +1,120 @@
 package com.healthsync.Patient.Service;
 
 import com.healthsync.Patient.Entity.Patient;
+import com.healthsync.Patient.Exception.ApiException;
+import com.healthsync.Patient.Exception.ResourceNotFoundException;
 import com.healthsync.Patient.Repository.PatientRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class PatientService {
-    @Autowired
-    PatientRepo patientRepo;
+    private final PatientRepo patientRepo;
+    private final PasswordEncoder passwordEncoder;
+
+    public PatientService(PatientRepo patientRepo, PasswordEncoder passwordEncoder) {
+        this.patientRepo = patientRepo;
+        this.passwordEncoder = passwordEncoder;
+    }
+
     public ResponseEntity<Object> createPatient(Patient patient) {
+        validateMobile(patient.getMobileNumber());
+        validateEmail(patient.getEmail());
 
-        if (patient.getMobileNumber() < 1000000000L || patient.getMobileNumber() > 9999999999L) {
-            return ResponseEntity.badRequest().body("Mobile number must be exactly 10 digits");
+        if (patientRepo.existsByEmail(patient.getEmail()) || patientRepo.existsByMobileNumber(patient.getMobileNumber())) {
+            throw new ApiException("Patient already exists");
         }
-        if (patient.getEmail() == null || !patient.getEmail().endsWith("@gmail.com")) {
-            return ResponseEntity.badRequest().body("Email must end with @gmail.com");
+        if (patient.getPassword() == null) {
+            throw new ApiException("Password must not be null");
         }
-        if(patientRepo.existsByEmail(patient.getEmail()) || patientRepo.existsByMobileNumber(patient.getMobileNumber()) ){
-            return ResponseEntity.badRequest().body("Patient already exists");
+        if (!patient.getPassword().equals(patient.getConfirmPassword())) {
+            throw new ApiException("Passwords do not match");
         }
-        if(patient.getPassword()==null){
-            return ResponseEntity.badRequest().body("Password must not be null");
-        }
-        if(!patient.getPassword().equals(patient.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body("Passwords do not match");
-        }
-        String password = patient.getPassword();
+        validatePassword(patient.getPassword());
 
-        String passwordRegex =
-                "^(?=.*[a-z])" +        // at least one lowercase
-                        "(?=.*[A-Z])" +         // at least one uppercase
-                        "(?=.*\\d)" +           // at least one digit
-                        "(?=.*[@$!%*?&])" +     // at least one special character
-                        "[A-Za-z\\d@$!%*?&]{8,15}$";
-
-        if (!password.matches(passwordRegex)) {
-            return ResponseEntity.badRequest().body(
-                    "Password must be 8-15 characters and include uppercase, lowercase, number, and special character"
-            );
-        }
-
-        try {
-            patientRepo.save(patient);
-            return ResponseEntity.ok(patient);
-        }
-        catch(Exception e) {
-            return ResponseEntity.badRequest().body("Unable to save the records");
-        }
-
+        patient.setPassword(passwordEncoder.encode(patient.getPassword()));
+        patient.setConfirmPassword(patient.getPassword());
+        return ResponseEntity.ok(patientRepo.save(patient));
     }
 
     public ResponseEntity<Object> updatePatient(Patient patient, long mobileNumber) {
-        Optional<Patient> op=patientRepo.findByMobileNumber(mobileNumber);
-        if(op.isEmpty()) return ResponseEntity.badRequest().build();
-        try {
-            Patient s=op.get();
-            if (patient.getMobileNumber() != 0) {
-                System.out.println("mobile Number"+ patient.getMobileNumber());
-                if (patient.getMobileNumber() < 1000000000L || patient.getMobileNumber() > 9999999999L) {
-                    return ResponseEntity.badRequest().body("Mobile number must be exactly 10 digits");
-                }
+        Patient existing = patientRepo.findByMobileNumber(mobileNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with mobile: " + mobileNumber));
 
-                if (!Objects.equals(s.getMobileNumber(), patient.getMobileNumber())
-                        && patientRepo.existsByMobileNumber(patient.getMobileNumber())) {
-                    return ResponseEntity.badRequest().body("Mobile number already exists");
-                }
-
-                s.setMobileNumber(patient.getMobileNumber());
+        if (patient.getMobileNumber() != 0) {
+            validateMobile(patient.getMobileNumber());
+            if (!Objects.equals(existing.getMobileNumber(), patient.getMobileNumber())
+                    && patientRepo.existsByMobileNumber(patient.getMobileNumber())) {
+                throw new ApiException("Mobile number already exists");
             }
-            if(patient.getName()!=null){
-                s.setName(patient.getName());
-            }
-            if(patient.getPassword()!=null){
-                String password = patient.getPassword();
-
-                String passwordRegex =
-                        "^(?=.*[a-z])" +        // at least one lowercase
-                                "(?=.*[A-Z])" +         // at least one uppercase
-                                "(?=.*\\d)" +           // at least one digit
-                                "(?=.*[@$!%*?&])" +     // at least one special character
-                                "[A-Za-z\\d@$!%*?&]{8,15}$";
-
-                if (!password.matches(passwordRegex)) {
-                    return ResponseEntity.badRequest().body(
-                            "Password must be 8-15 characters and include uppercase, lowercase, number, and special character"
-                    );
-                }
-                s.setPassword(patient.getPassword());
-            }
-
-
-            if(patient.getDob()!=null){
-                s.setDob(patient.getDob());
-            }
-
-            if (patient.getEmail() != null) {
-                System.out.println("email "+ patient.getEmail() );
-
-                if (!patient.getEmail().endsWith("@gmail.com")) {
-                    return ResponseEntity.badRequest().body("Email must end with @gmail.com");
-                }
-
-                if (!patient.getEmail().equals(s.getEmail())
-                        || patientRepo.existsByEmail(patient.getEmail())) {
-                    return ResponseEntity.badRequest().body("Email already exists");
-                }
-
-                s.setEmail(patient.getEmail());
-            }
-
-            if(patient.getGender()!=null){
-                s.setGender(patient.getGender());
-            }
-
-            patientRepo.save(s);
-            return ResponseEntity.ok(s);
+            existing.setMobileNumber(patient.getMobileNumber());
         }
-        catch(Exception e){
-            return  ResponseEntity.badRequest().build();
+        if (patient.getName() != null) {
+            existing.setName(patient.getName());
         }
+        if (patient.getPassword() != null) {
+            validatePassword(patient.getPassword());
+            existing.setPassword(passwordEncoder.encode(patient.getPassword()));
+            existing.setConfirmPassword(existing.getPassword());
+        }
+        if (patient.getDob() != null) {
+            existing.setDob(patient.getDob());
+        }
+
+        if (patient.getEmail() != null) {
+            validateEmail(patient.getEmail());
+            if (!patient.getEmail().equals(existing.getEmail()) && patientRepo.existsByEmail(patient.getEmail())) {
+                throw new ApiException("Email already exists");
+            }
+            existing.setEmail(patient.getEmail());
+        }
+
+        if (patient.getGender() != null) {
+            existing.setGender(patient.getGender());
+        }
+
+        return ResponseEntity.ok(patientRepo.save(existing));
     }
-    
 
     public ResponseEntity<Object> deletePatient(long mobileNumber) {
-        if(!patientRepo.existsByMobileNumber(mobileNumber)) {
-            return ResponseEntity.badRequest().build();
+        if (!patientRepo.existsByMobileNumber(mobileNumber)) {
+            throw new ResourceNotFoundException("Patient not found with mobile: " + mobileNumber);
         }
-        try {
-            patientRepo.deleteByMobileNumber(mobileNumber);
-            return ResponseEntity.ok(mobileNumber);
-        }
-        catch(Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        patientRepo.deleteByMobileNumber(mobileNumber);
+        return ResponseEntity.ok(mobileNumber);
     }
 
     public ResponseEntity<Object> getPatientByMobileNumber(long mobileNumber) {
-
         return patientRepo.findByMobileNumber(mobileNumber)
                 .map(patient -> ResponseEntity.ok((Object) patient))
-                .orElseThrow(() ->
-                        new RuntimeException("User not found with mobile: " + mobileNumber));
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with mobile: " + mobileNumber));
     }
 
+    private void validateMobile(long mobileNumber) {
+        if (mobileNumber < 1000000000L || mobileNumber > 9999999999L) {
+            throw new ApiException("Mobile number must be exactly 10 digits");
+        }
+    }
 
+    private void validateEmail(String email) {
+        if (email == null || !email.endsWith("@gmail.com")) {
+            throw new ApiException("Email must end with @gmail.com");
+        }
+    }
+
+    private void validatePassword(String password) {
+        String passwordRegex =
+                "^(?=.*[a-z])" +
+                        "(?=.*[A-Z])" +
+                        "(?=.*\\d)" +
+                        "(?=.*[@$!%*?&])" +
+                        "[A-Za-z\\d@$!%*?&]{8,15}$";
+
+        if (!password.matches(passwordRegex)) {
+            throw new ApiException("Password must be 8-15 characters and include uppercase, lowercase, number, and special character");
+        }
+    }
 }
